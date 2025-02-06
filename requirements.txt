@@ -9,7 +9,7 @@ matplotlib
 pypdf
 pymupdf4llm
 # Common Requirements
-torch
+# torch
 numpy
 transformers
 datasets
