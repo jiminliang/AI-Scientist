@@ -8,6 +8,8 @@ import time
 from contextlib import nullcontext
 from dataclasses import dataclass
 
+os.environ["TORCH_DISABLE_TRITON"] = "1"  # disable triton, by LJM
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -43,7 +45,8 @@ class CausalSelfAttention(nn.Module):
         self.n_embd = config.n_embd
         self.dropout = config.dropout
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
-        self.flash = hasattr(torch.nn.functional, "scaled_dot_product_attention")
+        # self.flash = hasattr(torch.nn.functional, "scaled_dot_product_attention")
+        self.flash = False  # disable by LJM
         if not self.flash:
             print(
                 "WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0"
@@ -355,7 +358,7 @@ def train(dataset="shakespeare_char", out_dir="run_0", seed_offset=0):
         if torch.cuda.is_available() and torch.cuda.is_bf16_supported()
         else "float16"
     )  # 'float32', 'bfloat16', or 'float16', the latter will auto implement a GradScaler
-    compile = True  # do not torch compile the model on macbooks
+    compile = False  # do not torch compile the model on macbooks
 
     # various inits, derived attributes, I/O setup
     # if not ddp, we are running on a single gpu, and one process
